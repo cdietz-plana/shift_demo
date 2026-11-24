@@ -228,8 +228,8 @@ input[type=checkbox]{width:15px;height:15px;accent-color:#2563eb}
 .dark .cm.a{background:#1b263b}.dark .csug button{background:#1e1b4b;color:#c4b5fd;border-color:#312e81}
 /* ================= dark mode ================= */
 #app.dark{background:linear-gradient(160deg,#0b1220 0%,#101a2e 55%,#0b1322 100%);color:#e6edf6}
-#app.photo{background:linear-gradient(180deg,rgba(242,246,250,.86) 0%,rgba(242,246,250,.62) 18%,rgba(231,238,245,.5) 60%,rgba(231,238,245,.72) 100%),url(bg-casino.jpg) center/cover}
-#app.photo.dark{background:linear-gradient(180deg,rgba(8,13,24,.86) 0%,rgba(8,13,24,.58) 18%,rgba(11,18,34,.5) 60%,rgba(11,18,34,.78) 100%),url(bg-casino.jpg) center/cover}
+#app.photo{background:linear-gradient(180deg,rgba(242,246,250,.9) 0%,rgba(242,246,250,.74) 18%,rgba(231,238,245,.64) 60%,rgba(231,238,245,.8) 100%),url(bg-casino.jpg) center/cover}
+#app.photo.dark{background:linear-gradient(180deg,rgba(8,13,24,.9) 0%,rgba(8,13,24,.7) 18%,rgba(11,18,34,.64) 60%,rgba(11,18,34,.84) 100%),url(bg-casino.jpg) center/cover}
 .dark .logo small,.dark .user small,.dark .ph p,.dark .card .s,.dark td small,.dark .kpi small,.dark .kpi em,.dark .li .tx small,.dark .legend,.dark .tnav .tl small{color:#94a3b8}
 .dark .user .av,.dark .av2{background:#083344;color:#5eead4}
 .dark .tnav{background:#131c2e;border-color:#243149;box-shadow:0 8px 24px rgba(0,0,0,.3)}.dark .tnav .ar{color:#cbd5e1}.dark .tnav .ar:hover{background:#1b263b}
@@ -363,7 +363,7 @@ function layout(instant){const n=VIEWS.length;
   $$('.panel').forEach(p=>{const i=+p.dataset.i;if(instant)p.style.transition='none';let o=((i-S.view)%n+n)%n;if(o>2)o-=n;const a=Math.abs(o),sg=Math.sign(o);
     /* the centered panel gets no 3D transform at all, so its text renders crisp instead of as a scaled texture */
     p.style.transform=a?`translateX(${[0,900,1440][a]*sg}px) translateZ(${[0,-200,-420][a]}px) rotateY(${[0,40,58][a]*sg}deg) scale(${[1,.75,.6][a]})`:'none';
-    p.style.opacity=[1,.82,.38][a];p.style.filter=a?`blur(${a===1?.6:2.5}px) saturate(${a===1?.7:.4})`:'none';p.style.zIndex=10-a;p.classList.toggle('off',o!==0);
+    p.style.opacity=[1,.97,.6][a];p.style.filter=a?`blur(${a===1?.6:2.5}px) saturate(${a===1?.7:.4})`:'none';p.style.zIndex=10-a;p.classList.toggle('off',o!==0);
     if(instant){p.offsetHeight;p.style.transition=''}});
   const btns=$$('#hnav button'),b=btns[S.view],ind=$('#hnav .ind');btns.forEach((x,i)=>x.classList.toggle('on',i===S.view));
   if(b){ind.style.left=b.offsetLeft+'px';ind.style.width=b.offsetWidth+'px'}}
