@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Shift Coverage · Standard</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared/flow.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+html,body{height:100%;overflow:hidden;background:#eef3f8}
+#app{position:absolute;left:var(--x,0px);top:var(--y,0px);width:1600px;height:900px;transform:scale(var(--s,1));transform-origin:0 0;font-family:Inter,system-ui,sans-serif;color:#0f2233;
+  background:radial-gradient(ellipse at 50% 0%,#ffffff 0%,#f2f6fa 55%,#e7eef5 100%);overflow:hidden}
+/* header */
+.top{position:absolute;left:36px;right:36px;top:18px;height:52px;display:flex;align-items:center;gap:14px;z-index:30}
+.logo{display:flex;align-items:center;gap:12px;cursor:pointer}
+.logo .m{width:40px;height:40px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,#0ea5a4,#2563eb);color:#fff;font-weight:900;font-size:13px;box-shadow:0 6px 16px rgba(37,99,235,.3)}
+.logo .brand{display:none;height:70px;margin-top:6px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.35))}.photo .logo .brand{display:block}.photo .logo .m,.photo .logo .lt{display:none}
+.logo b{display:block;font-size:17px}.logo small{display:block;font-size:12px;color:#4b6175}
+.sp{flex:1}
+.user{display:flex;align-items:center;gap:10px;font-size:13px}.user .av{width:36px;height:36px;border-radius:50%;background:#e0f2f1;color:#0b7a78;display:grid;place-items:center;font-weight:800;font-size:12px}
+.user small{display:block;font-size:11px;color:#4b6175}
+/* time navigation */
+.tnav{position:absolute;left:50%;top:18px;transform:translateX(-50%);display:flex;align-items:center;gap:8px;z-index:31;background:#fff;border:1px solid #d9e3ec;border-radius:16px;padding:6px;box-shadow:0 8px 24px rgba(15,34,51,.06)}
+.tnav .ar{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;font-size:18px;color:#334155}.tnav .ar:hover{background:#f1f5f9}
+.tnav .tl{min-width:220px;text-align:center;line-height:1.15}.tnav .tl b{font-size:14px;display:block}.tnav .tl small{font-size:11px;color:#64748b}
+.tnav .tl small.proj{color:#b45309}
+.seg{display:flex;gap:2px;padding:3px;border-radius:11px;background:#f1f5f9}
+.seg button{font-size:12.5px;font-weight:700;padding:7px 13px;border-radius:8px;color:#475569}
+.seg button.on{background:#fff;color:#0f2233;box-shadow:0 1px 3px rgba(15,34,51,.15)}
+.today{font-size:12.5px;font-weight:700;padding:8px 12px;border-radius:10px;color:#2563eb}
+.today:hover{background:#eff6ff}
+/* carousel nav */
+.hnav{position:absolute;left:50%;top:86px;transform:translateX(-50%);display:flex;gap:4px;padding:5px;border-radius:999px;background:rgba(255,255,255,.88);backdrop-filter:blur(10px);border:1px solid #d9e3ec;box-shadow:0 8px 24px rgba(15,34,51,.08);z-index:30}
+.hnav button{display:flex;align-items:center;gap:8px;padding:9px 18px;border-radius:999px;font-size:13.5px;font-weight:600;color:#4b6175;position:relative;z-index:1;transition:color .35s}
+.hnav button svg{width:16px;height:16px}
+.hnav button.on{color:#fff}
+.hnav .ind{position:absolute;top:5px;bottom:5px;border-radius:999px;background:linear-gradient(135deg,#0ea5a4,#2563eb);box-shadow:0 6px 16px rgba(37,99,235,.3);transition:all .6s cubic-bezier(.65,0,.35,1)}
+.hnav .badge{min-width:18px;height:18px;border-radius:9px;background:#e5484d;color:#fff;font-size:10.5px;display:grid;place-items:center;padding:0 5px}
+#stage{position:absolute;inset:0;perspective:1900px;perspective-origin:50% 45%}
+.panel{position:absolute;width:1100px;height:620px;left:250px;top:156px;border-radius:24px;background:#fff;border:1px solid #d9e3ec;box-shadow:0 30px 60px rgba(15,34,51,.1);
+  transition:transform 1s cubic-bezier(.65,0,.35,1),opacity 1s,filter 1s;overflow:hidden}
+.panel.off{-webkit-box-reflect:below 14px linear-gradient(transparent 85%,rgba(255,255,255,.2))}
+.panel.off{cursor:pointer}.panel.off *{pointer-events:none}
+.panel .in{position:absolute;inset:0;padding:22px 26px;display:flex;flex-direction:column}
+.ph{display:flex;align-items:flex-start;gap:14px;margin-bottom:14px}
+.ph h2{font-size:24px;font-weight:800;letter-spacing:-.3px}.ph p{font-size:13px;color:#4b6175;margin-top:3px}
+.hint{position:absolute;left:50%;transform:translateX(-50%);bottom:22px;font-size:12px;color:#64748b}
+.draftlbl{position:absolute;right:36px;bottom:22px;font-size:11px;color:#94a3b8}
+/* buttons, chips, pills */
+.btn{font-size:13px;font-weight:700;padding:9px 15px;border-radius:11px;background:#f1f5f9;color:#0f2233;white-space:nowrap;transition:transform .15s}
+.btn:hover{transform:translateY(-1px)}.btn:disabled{opacity:.4;transform:none;cursor:not-allowed}
+.btn.pri{background:linear-gradient(135deg,#0ea5a4,#2563eb);color:#fff;box-shadow:0 6px 14px rgba(37,99,235,.25)}
+.btn.sm{font-size:12px;padding:6px 11px;border-radius:9px}
+.pill{display:inline-block;font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.s-DRAFT{background:#eef2f7;color:#334155}.s-PENDING_APPROVAL{background:#ede9fe;color:#5b21b6}.s-READY_FOR_OUTREACH{background:#cffafe;color:#0e7490}
+.s-OUTREACH_IN_PROGRESS{background:#dbeafe;color:#1d4ed8}.s-PARTIALLY_FILLED{background:#fef3c7;color:#92400e}.s-FILLED{background:#d1fae5;color:#065f46}
+.s-UNABLE_TO_FILL{background:#ffe4e6;color:#9f1239}.s-PROJECTED{background:#fff7ed;color:#b45309;border:1px dashed #fdba74}.s-DECISION{background:#fee2e2;color:#b91c1c}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:7px;vertical-align:1px}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chips button{font-size:12px;font-weight:600;padding:6px 11px;border-radius:999px;background:#f1f5f9;color:#475569;border:1px solid transparent}
+.chips button.on{background:#e0f2fe;color:#0369a1;border-color:#bae6fd}
+.chips button em{font-style:normal;font-weight:800;margin-left:4px;opacity:.7}
+.tb{display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.search{display:flex;align-items:center;gap:8px;padding:8px 12px;border-radius:11px;border:1px solid #d9e3ec;background:#f8fafc;width:220px}
+.search svg{width:16px;height:16px;flex:0 0 16px;color:#94a3b8}
+.search input{border:0;background:none;outline:0;font-size:13px;width:100%}
+select.sel{font-size:12.5px;font-weight:600;padding:7px 10px;border-radius:10px;border:1px solid #d9e3ec;background:#fff;outline:0}
+/* tables */
+.tw{flex:1;min-height:0;overflow:auto;border:1px solid #e6edf3;border-radius:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{position:sticky;top:0;background:#f8fafc;text-align:left;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#64748b;padding:10px 12px;border-bottom:1px solid #e6edf3;white-space:nowrap;z-index:1}
+thead th small{display:block;margin-top:1px}
+thead th.sort{cursor:pointer}thead th.sort:hover{color:#0f2233}thead th .ar{opacity:.5;margin-left:4px}
+tbody td{white-space:nowrap;padding:10px 12px;border-bottom:1px solid #f1f5f9;vertical-align:middle}
+tbody tr:hover{background:#f8fbff}
+tbody tr.proj td{color:#64748b}
+td small{display:block;font-size:11.5px;color:#64748b;margin-top:1px}
+td.num{font-variant-numeric:tabular-nums}
+.prog{display:flex;align-items:center;gap:8px}.prog i{width:70px;height:6px;border-radius:3px;background:#e2e8f0;overflow:hidden;display:block}.prog i u{display:block;height:100%;background:linear-gradient(90deg,#10b981,#0ea5a4)}
+input[type=checkbox]{width:15px;height:15px;accent-color:#2563eb}
+.empty{padding:40px;text-align:center;color:#64748b;font-size:13px}
+.tag{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:6px;background:#f1f5f9;color:#475569;margin:1px 3px 1px 0}
+.tag.warn{background:#fef3c7;color:#92400e}.tag.ok{background:#d1fae5;color:#065f46}.tag.no{background:#ffe4e6;color:#9f1239}
+.hrs{display:flex;align-items:center;gap:8px}.hrs i{width:80px;height:6px;border-radius:3px;background:#e2e8f0;overflow:hidden;display:block;position:relative}.hrs i u{display:block;height:100%;background:#0ea5a4}.hrs i u.hot{background:#f59e0b}
+.av2{width:28px;height:28px;border-radius:50%;display:inline-grid;place-items:center;font-size:10.5px;font-weight:800;background:#e0f2f1;color:#0b7a78;margin-right:9px;vertical-align:middle}
+/* overview */
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
+.kpi{border:1px solid #e6edf3;border-radius:16px;padding:12px 16px;background:linear-gradient(180deg,#fff,#f8fbfe)}
+.kpi small{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#64748b}
+.kpi b{display:block;font-size:28px;font-weight:800;margin-top:2px;letter-spacing:-.5px}.kpi em{font-style:normal;font-size:12px;color:#64748b}
+.ov{display:grid;grid-template-columns:1.15fr 1fr;gap:14px;flex:1;min-height:0}
+.card{border:1px solid #e6edf3;border-radius:16px;padding:14px 16px;display:flex;flex-direction:column;min-height:0}
+.card h3{font-size:14.5px;font-weight:800}.card .s{font-size:12px;color:#64748b;margin-top:2px}
+.list{flex:1;overflow:auto;margin-top:10px;display:flex;flex-direction:column;gap:8px}
+.li{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;border:1px solid #eef2f7;background:#fbfdff}
+.cell.fc{background:#eef2ff;color:#4f46e5}.dark .cell.fc{background:#1e1b4b;color:#a5b4fc}
+.bar .tr u.okbar{background:#d1fae5}.dark .bar .tr u.okbar{background:#065f46}
+#app{--bad:#be123c;--good:#047857;--proj:#b45309}#app.dark{--bad:#fb7185;--good:#34d399;--proj:#fdba74}
+.dark .legend i{filter:brightness(.55) saturate(1.4)}
+.decbar{margin-bottom:10px;background:#fff7f7;border-color:#fecdd3}
+.dark .decbar{background:#2a0f16;border-color:#7f1d2d}
+.li .tx{flex:1;min-width:0}.li .tx b{display:block;font-size:13px}.li .tx small{display:block;font-size:11.5px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bars{flex:1;overflow:auto;margin-top:10px}
+.bar{display:grid;grid-template-columns:130px 1fr 64px;align-items:center;gap:10px;padding:6px 4px;font-size:12.5px;border-radius:8px}
+.bar.click{cursor:pointer}.bar.click:hover{background:#f1f7ff}
+.bar .tr{height:10px;border-radius:5px;background:#e2e8f0;position:relative;overflow:hidden}.bar .tr u{position:absolute;left:0;top:0;bottom:0;background:#0ea5a4;border-radius:5px}
+.bar .tr u.gap{background:repeating-linear-gradient(45deg,#fda4af 0 4px,#fecdd3 4px 8px);left:auto;right:0}
+.bar .tr u.proj{background:repeating-linear-gradient(45deg,#fdba74 0 4px,#ffedd5 4px 8px);left:auto;right:0}
+.bar b{text-align:right;font-variant-numeric:tabular-nums}
+.agent{display:flex;align-items:center;gap:14px;margin-bottom:14px}
+.agent .fo{position:relative;width:54px;height:54px;flex:0 0 54px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#efe9ff,#8b6cff 45%,#3b1d9a);box-shadow:0 8px 20px rgba(124,92,255,.35)}
+.agname{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#7c3aed;margin-bottom:2px}.dark .agname{color:#a78bfa}
+.agent h2{font-size:24px;font-weight:800;letter-spacing:-.3px}.agent p{font-size:13.5px;color:#4b6175;margin-top:3px}
+.sug{padding:12px 14px;border-radius:14px;border:1px solid #e0e7ff;background:linear-gradient(160deg,#f5f7ff,#f0fdfa)}
+.sug .k{font-size:10.5px;font-weight:800;letter-spacing:.6px;text-transform:uppercase;color:#4f46e5}
+.sug b{display:block;font-size:13.5px;margin-top:3px}.sug p{font-size:12px;color:#4b6175;margin-top:3px;line-height:1.45}
+.sug .acts{display:flex;gap:6px;margin-top:8px}
+.dmHint{display:flex;gap:8px;align-items:center;font-size:11.5px;color:#7c5a1a;padding:8px 10px;border-radius:10px;border:1px dashed #e9b860;background:#fff8e6;margin-top:8px;line-height:1.4}
+.dmHint .dmBadge{color:#b45309;background:#fdecc8;border-color:#e9b860;flex:0 0 auto}
+/* calendar grids */
+.grid{flex:1;min-height:0;overflow:auto;border:1px solid #e6edf3;border-radius:14px}
+.grid table td.c{text-align:center;padding:6px}
+.cell{display:block;border-radius:9px;padding:8px 4px;font-size:12.5px;font-weight:700;font-variant-numeric:tabular-nums;background:#ecfdf5;color:#047857;transition:transform .15s}
+.cell.short{background:#fff1f2;color:#be123c;box-shadow:inset 0 0 0 1.5px #fda4af;cursor:pointer}.cell.short:hover{transform:scale(1.05)}
+.cell.part{background:#fffbeb;color:#b45309;box-shadow:inset 0 0 0 1.5px #fcd34d;cursor:pointer}
+.cell.proj{background:#fff7ed;color:#b45309;box-shadow:inset 0 0 0 1.5px dashed #fdba74;cursor:pointer;border:1.5px dashed #fdba74}
+.cell.none{background:#f8fafc;color:#cbd5e1}
+.cell small{display:block;font-size:10px;font-weight:600;opacity:.8;margin-top:1px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:8px;flex:1;min-height:0}
+.cal .h{font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#64748b;text-align:center}
+.day{border-radius:12px;border:1px solid #e6edf3;padding:8px 10px;cursor:pointer;position:relative;background:#fff;transition:transform .15s,box-shadow .2s;min-height:82px}
+.day:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(15,34,51,.08)}
+.day .d{font-size:12px;font-weight:700;color:#475569}.day.today .d{color:#2563eb}
+.day .n{position:absolute;right:8px;top:8px;font-size:11px;font-weight:800;padding:2px 7px;border-radius:999px}
+.day.l1{background:#fff7f7}.day.l2{background:#ffeef0}.day.l3{background:#ffe0e4}
+.day.l1 .n,.day.l2 .n,.day.l3 .n{background:#e11d48;color:#fff}
+.day.pj{background:repeating-linear-gradient(135deg,#fffaf3 0 8px,#fff4e6 8px 16px);border-style:dashed;border-color:#fdba74}.day.pj .n{background:#f59e0b;color:#fff}
+.day .tm{display:flex;gap:3px;flex-wrap:wrap;margin-top:22px}.day .tm i{width:8px;height:8px;border-radius:50%}
+.day .hl{font-size:10px;font-weight:700;color:#7c3aed;margin-top:4px}
+.day.past{opacity:.55}
+.legend{display:flex;gap:16px;font-size:11.5px;color:#64748b;margin-top:10px;align-items:center}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:5px;vertical-align:-1px}
+/* decision dialog (light) */
+.dec{position:absolute;inset:0;z-index:400;display:grid;place-items:center;background:rgba(15,34,51,.28);backdrop-filter:blur(4px)}
+.decb{width:540px;border-radius:22px;padding:22px 24px;background:#fff;border:1px solid #d9e3ec;box-shadow:0 40px 80px rgba(15,34,51,.25);border-top:4px solid var(--fa)}
+.decb .k{font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:#64748b}.decb h3{font-size:20px;margin-top:6px}.decb .s{font-size:13px;color:#4b6175;margin-top:4px}
+.dopt{display:block;width:100%;text-align:left;margin-top:10px;padding:13px 15px;border-radius:14px;border:1px solid #e6edf3;background:#f8fafc;position:relative}
+.dopt:hover{border-color:#2563eb;background:#eff6ff}.dopt b{display:block;font-size:14px}.dopt span{display:block;font-size:12.5px;color:#4b6175;margin-top:3px;padding-right:96px}
+.dopt .rec{position:absolute;right:12px;top:12px;font-size:10px;font-weight:800;padding:2px 8px;border-radius:999px;background:#d1fae5;color:#065f46}
+#toast{position:absolute;left:50%;bottom:30px;transform:translateX(-50%) translateY(20px);background:#0f2233;color:#fff;font-size:13px;font-weight:600;padding:11px 18px;border-radius:12px;opacity:0;transition:all .35s;z-index:500;pointer-events:none}
+#toast.show{opacity:1;transform:translateX(-50%)}
+/* shared flow panel, light skin */
+.gen .fl-dim{background:linear-gradient(90deg,rgba(15,34,51,.02),rgba(15,34,51,.22))}
+.gen .fl-panel{color:#0f2233;background:#fff;border:1px solid #d9e3ec;box-shadow:0 30px 80px rgba(15,34,51,.22)}
+.gen .fl-hd,.gen .fl-foot{border-color:#e6edf3}.gen .fl-hd .dot{box-shadow:none}
+.gen .fl-ib{background:#f1f5f9;border-color:#e2e8f0;color:#0f2233}.gen .fl-ib.on{background:#e2e8f0}
+.gen .fl-meta span,.gen .fl-chip{background:#f1f5f9}
+.gen .fl-pill.DRAFT{background:#eef2f7;color:#334155}.gen .fl-pill.PENDING_APPROVAL{background:#ede9fe;color:#5b21b6}.gen .fl-pill.READY_FOR_OUTREACH{background:#cffafe;color:#0e7490}
+.gen .fl-pill.OUTREACH_IN_PROGRESS{background:#dbeafe;color:#1d4ed8}.gen .fl-pill.PARTIALLY_FILLED{background:#fef3c7;color:#92400e}.gen .fl-pill.FILLED{background:#d1fae5;color:#065f46}.gen .fl-pill.UNABLE_TO_FILL{background:#ffe4e6;color:#9f1239}
+.gen .fl-steps div::before{background:#e2e8f0}.gen .fl-steps div.cur::before{background:linear-gradient(90deg,var(--fa),#93c5fd);box-shadow:none}
+.gen .fl-ag p,.gen .fl-msg,.gen .fl-kpis div{background:#f4f7fb;border-color:#e6edf3}
+.gen .fl-quote{background:#f8fafc;border-color:#cbd5e1}.gen .fl-quote mark{color:#0f2233}
+.gen .fl-quote mark.need{background:#fbcfe8}.gen .fl-quote mark.when{background:#a5f3fc}.gen .fl-quote mark.loc{background:#fde68a}.gen .fl-quote mark.role{background:#ddd6fe}
+.gen .fl-card,.gen .fl-row,.gen .fl-cmpc{background:#f8fafc;border-color:#e6edf3}.gen .fl-cmpc.sel{background:#eff6ff;border-color:var(--fa)}
+.gen .fl-card .v button,.gen .fl-row .av{background:#e2e8f0;color:#0f2233}
+.gen .fl-seg button{background:#eef2f7;color:#0f2233}.gen .fl-seg button.on{background:var(--fa);color:#fff}
+.gen .fl-btn{background:#eef2f7;color:#0f2233}.gen .fl-btn.pri{background:linear-gradient(135deg,#0ea5a4,#2563eb);color:#fff}.gen .fl-btn.acc{background:linear-gradient(135deg,#0ea5a4,#2563eb);color:#fff;box-shadow:0 6px 14px rgba(37,99,235,.25)}
+.gen .fl-btn:disabled{opacity:.4}
+.gen .fl-tag.ok{background:#d1fae5;color:#065f46}.gen .fl-tag.no{background:#ffe4e6;color:#9f1239}.gen .fl-tag.wait{background:#eef2f7;color:#475569}.gen .fl-tag.sent{background:#dbeafe;color:#1d4ed8}.gen .fl-tag.open{background:#ede9fe;color:#5b21b6}
+.gen .fl-spin{border-color:#cbd5e1;border-top-color:#2563eb}
+.gen .fl-bub{background:#e8eef6;color:#0f2233}.gen .fl-bub u{color:#2563eb}
+.gen .fl-pol{background:#fffbeb;border-color:#fde68a}.gen .fl-pol b{color:#92400e}
+.gen .fl-cmpc .rec{background:#fef3c7;color:#92400e}
+.gen .fl-fac div{background:#eef2f7}.gen .fl-fac .good b{color:#059669}.gen .fl-fac .bad b{color:#e11d48}
+.gen .fl-ta{background:#f8fafc;border-color:#cbd5e1;color:#0f2233}.gen .fl-warn{color:#e11d48}
+.gen .fl-opt{background:linear-gradient(160deg,#eef2ff,#ecfeff);border-color:#c7d2fe}
+.gen .fl-hist{background:#fff}.gen .fl-ev{border-color:#eef2f7}
+.gen .fl-wv i{background:#cbd5e1}.gen .fl-prog{background:#e2e8f0}
+.gen .fl-phone .lbl{color:#2563eb}
+.gen .fl-wv.on i{background:#2563eb}
+.gen .fl-confirm{background:rgba(15,34,51,.25)}.gen .fl-cbox{background:#fff;border-color:#d9e3ec;color:#0f2233;box-shadow:0 30px 60px rgba(15,34,51,.25)}
+.gdark .fl-cbox{background:#131c2e;border-color:#243149}
+/* scenario tags + demo guide */
+.scn{margin-left:6px}
+.guideBtn{position:absolute;right:36px;bottom:16px;z-index:40;display:flex;align-items:center;gap:7px;font-size:12.5px;font-weight:700;padding:8px 13px;border-radius:11px;border:1px solid #d9e3ec;background:#fff;color:#5b21b6;margin-right:12px}
+.guideBtn:hover{border-color:#a78bfa}
+.thBtn{width:38px;height:38px;border-radius:11px;border:1px solid #d9e3ec;background:#fff;display:grid;place-items:center;font-size:16px;margin-right:12px}
+.guide{position:absolute;right:36px;bottom:66px;width:420px;z-index:450;border-radius:20px;padding:18px 18px 12px;background:#fff;border:1px solid #d9e3ec;box-shadow:0 30px 70px rgba(15,34,51,.22);animation:gIn .25s ease both}
+@keyframes gIn{from{opacity:0;transform:translateY(8px)}}
+.guide h4{font-size:15px}.guide>p{font-size:12px;color:#64748b;margin:3px 0 10px}
+.gi{display:flex;align-items:center;gap:10px;padding:9px 0;border-top:1px solid #eef2f7}
+.gi .tx{flex:1}.gi b{display:block;font-size:13px}.gi small{display:block;font-size:11.5px;color:#64748b;line-height:1.4;margin-top:1px}
+.gi .ic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;font-size:14px;flex:0 0 30px;background:#f1f5f9}
+
+/* ===== Shifty chat dock (bottom-left) ===== */
+.hint{bottom:26px}
+.dock{position:absolute;left:28px;bottom:14px;z-index:420;display:flex;align-items:center;gap:10px}
+.dface{position:relative;width:60px;height:60px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#efe9ff,#8b6cff 45%,#3b1d9a);box-shadow:0 10px 24px rgba(124,92,255,.4);flex:0 0 60px;transition:transform .2s}
+.dface:hover{transform:scale(1.06)}
+.dface::after{content:'';position:absolute;right:2px;bottom:4px;width:13px;height:13px;border-radius:50%;background:#10b981;border:2.5px solid #fff}
+.dbar{display:flex;align-items:center;gap:8px;width:420px;padding:7px 7px 7px 14px;border-radius:16px;background:#fff;border:1px solid #d9e3ec;box-shadow:0 12px 30px rgba(15,34,51,.12)}
+.dlbl{display:flex;flex-direction:column;line-height:1.2;flex:0 0 auto;padding-right:10px;border-right:1px solid #e6edf3}
+.dlbl b{font-size:12px;color:#7c3aed}.dlbl span{font-size:10.5px;color:#64748b;max-width:120px;transition:opacity .25s}
+.dbar input{flex:1;border:0;outline:0;background:none;font-size:13px;min-width:0}
+.dsend{width:32px;height:32px;border-radius:10px;background:linear-gradient(135deg,#0ea5a4,#2563eb);color:#fff;font-weight:900;font-size:15px;flex:0 0 32px}
+.chat{position:absolute;left:28px;bottom:88px;width:490px;height:470px;z-index:430;border-radius:22px;background:#fff;border:1px solid #d9e3ec;box-shadow:0 30px 70px rgba(15,34,51,.22);
+  display:flex;flex-direction:column;overflow:hidden;opacity:0;transform:translateY(14px) scale(.98);pointer-events:none;transition:opacity .25s,transform .25s}
+.chat.on{opacity:1;transform:none;pointer-events:auto}
+.chd{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid #eef2f7}
+.chd .cfo{position:relative;width:38px;height:38px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#efe9ff,#8b6cff 45%,#3b1d9a);flex:0 0 38px}
+.chd b{display:block;font-size:14px}.chd small{font-size:11px;color:#64748b}.chd .cx{margin-left:auto;width:30px;height:30px;border-radius:9px;color:#64748b}.chd .cx:hover{background:#f1f5f9}
+.cmsgs{flex:1;overflow:auto;padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.cm{max-width:86%;font-size:13px;line-height:1.5;padding:10px 13px;border-radius:16px;animation:bubIn .3s cubic-bezier(.3,1.4,.5,1) both}
+.cm.a{align-self:flex-start;background:#f1f5f9;border-bottom-left-radius:5px}.cm.u{align-self:flex-end;background:linear-gradient(135deg,#0ea5a4,#2563eb);color:#fff;border-bottom-right-radius:5px}
+.cm .acts{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.cm ul{margin:6px 0 0 16px}.cm li{margin:2px 0}
+.cm.typing{display:flex;gap:4px;padding:13px 14px}.cm.typing i{width:6px;height:6px;border-radius:50%;background:#94a3b8;animation:tp 1s infinite}.cm.typing i:nth-child(2){animation-delay:.15s}.cm.typing i:nth-child(3){animation-delay:.3s}
+@keyframes tp{0%,60%,100%{opacity:.3;transform:none}30%{opacity:1;transform:translateY(-3px)}}
+.csug{display:flex;flex-wrap:wrap;gap:6px;padding:10px 16px 14px;border-top:1px solid #eef2f7}
+.csug button{font-size:12px;font-weight:600;padding:6px 11px;border-radius:999px;background:#f5f3ff;color:#5b21b6;border:1px solid #ddd6fe}
+.csug button:hover{background:#ede9fe}
+.dark .dbar{background:#131c2e;border-color:#243149;box-shadow:0 12px 30px rgba(0,0,0,.35)}.dark .dlbl{border-color:#243149}.dark .dlbl b{color:#a78bfa}.dark .dlbl span{color:#94a3b8}
+.dark .dbar input{color:#e6edf6}.dark .dface::after{border-color:#0b1220}
+.dark .chat{background:#111a2b;border-color:#243149;box-shadow:0 30px 70px rgba(0,0,0,.5)}.dark .chd,.dark .csug{border-color:#1f2a40}.dark .chd small{color:#94a3b8}.dark .chd .cx:hover{background:#1b263b}
+.dark .cm.a{background:#1b263b}.dark .csug button{background:#1e1b4b;color:#c4b5fd;border-color:#312e81}
+/* ================= dark mode ================= */
+#app.dark{background:linear-gradient(160deg,#0b1220 0%,#101a2e 55%,#0b1322 100%);color:#e6edf6}
+#app.photo{background:linear-gradient(180deg,rgba(242,246,250,.86) 0%,rgba(242,246,250,.62) 18%,rgba(231,238,245,.5) 60%,rgba(231,238,245,.72) 100%),url(bg-casino.jpg) center/cover}
+#app.photo.dark{background:linear-gradient(180deg,rgba(8,13,24,.86) 0%,rgba(8,13,24,.58) 18%,rgba(11,18,34,.5) 60%,rgba(11,18,34,.78) 100%),url(bg-casino.jpg) center/cover}
+.dark .logo small,.dark .user small,.dark .ph p,.dark .card .s,.dark td small,.dark .kpi small,.dark .kpi em,.dark .li .tx small,.dark .legend,.dark .tnav .tl small{color:#94a3b8}
+.dark .user .av,.dark .av2{background:#083344;color:#5eead4}
+.dark .tnav{background:#131c2e;border-color:#243149;box-shadow:0 8px 24px rgba(0,0,0,.3)}.dark .tnav .ar{color:#cbd5e1}.dark .tnav .ar:hover{background:#1b263b}
+.dark .tnav .tl small.proj{color:#fdba74}
+.dark .seg{background:#0d1526}.dark .seg button{color:#94a3b8}.dark .seg button.on{background:#243149;color:#fff;box-shadow:none}
+.dark .today{color:#60a5fa}.dark .today:hover{background:#172554}
+.dark .hnav{background:rgba(19,28,46,.9);border-color:#243149;box-shadow:0 8px 24px rgba(0,0,0,.35)}.dark .hnav button{color:#94a3b8}.dark .hnav button.on{color:#fff}
+.dark .panel{background:#111a2b;border-color:#243149;box-shadow:0 30px 60px rgba(0,0,0,.45)}.dark .panel.off{-webkit-box-reflect:below 14px linear-gradient(transparent 85%,rgba(255,255,255,.06))}
+.dark .btn{background:#1b263b;color:#e6edf6}.dark .btn.pri{background:linear-gradient(135deg,#0ea5a4,#2563eb);color:#fff}
+.dark .s-DRAFT{background:#1e293b;color:#cbd5e1}.dark .s-PENDING_APPROVAL{background:#2e1065;color:#c4b5fd}.dark .s-READY_FOR_OUTREACH{background:#083344;color:#67e8f9}
+.dark .s-OUTREACH_IN_PROGRESS{background:#172554;color:#93c5fd}.dark .s-PARTIALLY_FILLED{background:#422006;color:#fcd34d}.dark .s-FILLED{background:#052e16;color:#6ee7b7}
+.dark .s-UNABLE_TO_FILL{background:#4c0519;color:#fda4af}.dark .s-PROJECTED{background:#2a1606;color:#fdba74;border-color:#9a3412}.dark .s-DECISION{background:#450a0a;color:#fca5a5}
+.dark .chips button{background:#1b263b;color:#94a3b8}.dark .chips button.on{background:#0c4a6e;color:#7dd3fc;border-color:#075985}
+.dark .search{background:#0d1526;border-color:#243149}.dark select.sel{background:#0d1526;border-color:#243149;color:#e6edf6}
+.dark .tw,.dark .grid{border-color:#1f2a40}.dark thead th{background:#0f1726;border-color:#1f2a40;color:#94a3b8}.dark tbody td{border-color:#182238}
+.dark tbody tr:hover{background:#142036}.dark tbody tr.proj td{color:#7c8aa0}
+.dark .prog i,.dark .hrs i,.dark .bar .tr{background:#1f2a40}
+.dark .tag{background:#1b263b;color:#cbd5e1}.dark .tag.warn{background:#422006;color:#fcd34d}.dark .tag.ok{background:#052e16;color:#6ee7b7}.dark .tag.no{background:#4c0519;color:#fda4af}
+.dark .kpi{background:linear-gradient(180deg,#131d30,#111a2b);border-color:#1f2a40}.dark .card{border-color:#1f2a40}
+.dark .li{background:#0f1828;border-color:#1f2a40}.dark .bar.click:hover{background:#142036}
+.dark .sug{background:linear-gradient(160deg,#17163a,#0b2626);border-color:#312e81}.dark .sug .k{color:#a5b4fc}.dark .sug p{color:#94a3b8}
+.dark .dmHint{background:#1f1608;border-color:#7c5a1a;color:#fcd34d}
+.dark .cell{background:#052e16;color:#6ee7b7}.dark .cell.short{background:#3b0a14;color:#fda4af;box-shadow:inset 0 0 0 1.5px #9f1239}
+.dark .cell.part{background:#3a2a06;color:#fcd34d;box-shadow:inset 0 0 0 1.5px #a16207}.dark .cell.proj{background:#2a1606;color:#fdba74;border-color:#9a3412}.dark .cell.none{background:#0f1726;color:#334155}
+.dark .day{background:#111a2b;border-color:#1f2a40}.dark .day .d{color:#cbd5e1}.dark .day.today .d{color:#60a5fa}
+.dark .day.l1{background:#2a1018}.dark .day.l2{background:#3b0f1d}.dark .day.l3{background:#4c0f22}
+.dark .day.pj{background:repeating-linear-gradient(135deg,#1f1608 0 8px,#271b0a 8px 16px);border-color:#9a3412}
+.dark .dec{background:rgba(0,0,0,.5)}.dark .decb{background:#111a2b;border-color:#243149}.dark .decb .s,.dark .decb .k{color:#94a3b8}
+.dark .dopt{background:#0f1828;border-color:#1f2a40}.dark .dopt:hover{background:#172554;border-color:#3b82f6}.dark .dopt span{color:#94a3b8}
+.dark .hint,.dark .draftlbl{color:#64748b}.dark #toast{background:#e6edf6;color:#0b1220}
+.dark .empty{color:#94a3b8}
+.dark .guideBtn,.dark .thBtn{background:#131c2e;border-color:#243149;color:#c4b5fd}.dark .thBtn{color:#fde68a}
+.dark .guide{background:#111a2b;border-color:#243149;box-shadow:0 30px 70px rgba(0,0,0,.5)}.dark .guide>p,.dark .gi small{color:#94a3b8}.dark .gi{border-color:#1f2a40}.dark .gi .ic{background:#1b263b}
+/* flow panel in dark mode: default dark skin, matched to this palette */
+.gdark .fl-panel{background:linear-gradient(180deg,#131c2e,#0d1424);border-color:#243149}
+.gdark .fl-btn.acc,.gdark .fl-btn.pri{background:linear-gradient(135deg,#0ea5a4,#2563eb);color:#fff}
+.gdark .fl-wv.on i{background:#2563eb}.gdark .fl-phone .lbl{color:#93c5fd}
+</style>
+</head>
+<body>
+<div id="app" class="gen">
+  <div class="top"><div class="logo"><div class="m">SC</div><div class="lt"><b>Shift Coverage</b><small>Example Co. · Operations</small></div><img class="brand" src="logo-grand-fortune.png" alt="The Grand Fortune Casino &amp; Lounge"></div>
+    <div class="sp"></div><button class="thBtn" id="thBtn" title="Switch light or dark">☾</button><span id="dmSlot"></span><div class="user"><div class="av">MR</div><div><b>Maya Rivers</b><small>Operations Manager</small></div></div></div>
+  <div class="tnav" id="tnav"></div>
+  <div class="hnav" id="hnav"></div>
+  <div id="stage"></div>
+  <button class="guideBtn" id="guideBtn">🎬 Demo scenarios</button><div class="hint">← → to rotate</div>
+  <div class="dock" id="dock"><button class="dface faceHost" id="dFace" title="Chat with Shifty"></button>
+    <form class="dbar" id="dForm"><div class="dlbl"><b>Shifty</b><span id="dTip">Ask me anything, or tell me what to do</span></div>
+      <input id="dIn" autocomplete="off" placeholder="Type a request…"><button class="dsend" title="Send">↑</button></form></div>
+  <div class="chat" id="chat"><div class="chd"><span class="cfo faceHost" id="cFace"></span><div><b>Shifty</b><small>Your coverage agent · I draft, you decide</small></div><button class="cx" id="cX">✕</button></div>
+    <div class="cmsgs" id="cMsgs"></div><div class="csug" id="cSug"></div></div>
+  
+  <div id="toast"></div>
+</div>
+<script src="shared/gate.js"></script>
+<script src="shared/face.js"></script>
+<script src="shared/datamode.js"></script>
+<script src="requests.js"></script>
+<script src="shared/flow.js"></script>
+<script>
+/* ================= dates & range ================= */
+const TODAY=new Date(2026,10,19);
+const D=(y,m,d)=>new Date(y,m,d);const key=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const add=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const monday=d=>add(d,-((d.getDay()+6)%7));
+const MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const fmt=d=>`${MON[d.getMonth()]} ${d.getDate()}`,fmtL=d=>`${DOW[d.getDay()]}, ${fmt(d)}`;
+const PUBLISHED_TO=D(2026,11,6); /* schedule published through Sun Dec 6 */
+const HOLI={'2026-11-26':'Thanksgiving'};
+const T={scale:'week',anchor:monday(TODAY)};
+function range(){if(T.scale==='day')return [T.anchor,T.anchor];if(T.scale==='week'){const s=monday(T.anchor);return [s,add(s,6)]}const s=monday(T.anchor);return [s,add(s,34)]}
+const inR=(d,[a,b])=>d>=a&&d<=b;
+
+/* ================= gaps model ================= */
+const SHIFT={Day:'8:00 AM – 4:00 PM',Evening:'4:00 PM – 12:00 AM',Night:'10:00 PM – 6:00 AM'};
+const ROLE={sup:'Support Agent',ops:'Operations Associate',fac:'Facilities Tech',sec:'Security Officer',rec:'Receptionist',fld:'Field Technician',it:'On-call Engineer',log:'Logistics Associate'};
+const LOC={sup:'Support Center · Floor 2',ops:'Building A',fac:'Campus',sec:'Main Entrance',rec:'Main Lobby',fld:'North Region',it:'Remote',log:'Dock 3'};
+const TPL={sup:[14,8,2],ops:[16,12,10],fac:[6,3,2],sec:[6,6,4],rec:[3,1,0],fld:[10,2,0],it:[4,2,1],log:[10,6,4]};
+const POOL={sup:['Mira Patel','Sam Ortiz','Ana Ruiz','Ben Shaw'],ops:['Lee Moss','Chris Dunn','Pat Rivera','Uma Rao'],fac:['Gil Ford','Ivy Tran'],sec:['Kai Lowe','Dana Fox','Rex Moon'],rec:['Rae Quinn','Jordan Lee'],
+ fld:['Avery Kim','Casey Brooks','Lou Grant'],it:['Jamie Fox','Robin Lee','Nat Cole'],log:['Robin Hale','Tess Ward','Omar Diaz']};
+const G0=[ /* date, team, shift, people short, request id for the weekend requests */
+ ['2026-11-20','log','Evening',1],
+ ['2026-11-21','sup','Day',3,'sup'],['2026-11-21','rec','Day',1,'rec'],['2026-11-21','sec','Evening',2,'sec'],['2026-11-21','ops','Night',4,'ops'],['2026-11-21','it','Night',1,'it'],['2026-11-22','fld','Day',2,'fld'],
+ ['2026-11-26','sup','Day',3],['2026-11-26','ops','Day',2],['2026-11-26','rec','Day',1],['2026-11-27','sup','Day',2],['2026-11-27','log','Day',2],
+ ['2026-11-28','sec','Evening',1],['2026-11-28','ops','Night',2],['2026-11-29','fld','Day',1],['2026-12-02','it','Night',1],['2026-12-05','sec','Evening',1],['2026-12-05','ops','Night',1],['2026-12-06','fld','Day',1],
+ ['2026-12-12','sec','Evening',1],['2026-12-12','ops','Night',2],['2026-12-13','sup','Day',1],['2026-12-16','it','Night',1],['2026-12-19','sec','Evening',1],['2026-12-19','ops','Night',2],['2026-12-19','log','Day',1],['2026-12-20','fld','Day',1]];
+const pd=k=>{const [y,m,d]=k.split('-').map(Number);return D(y,m-1,d)};
+const GAPS=G0.map(([k,team,shift,n,rid])=>{const date=pd(k);const proj=date>PUBLISHED_TO;let id=rid;
+  if(!id&&!proj){id=`${team}-${k}-${shift}`;const p=POOL[team];const dl=fmtL(date);
+    const cands=p.slice(0,n+1).map((nm,i)=>({name:nm,from:team,note:i<n?'Available · under 40 hrs':'Asked to skip holiday shifts',ok:true,resp:i<n?'accept':'decline',fit:92-i*3,n:1}));
+    if(p[n+1])cands.push({name:p[n+1],from:team,note:'Already scheduled that day',ok:false,resp:null,fit:0,n:1});
+    REQ[id]={dept:team,deptName:TEAMS[team].n,c:TEAMS[team].c,callout:`${TEAMS[team].n} needs ${n} ${ROLE[team].toLowerCase()}${n>1?'s':''} on ${dl}, ${SHIFT[shift].replace(' – ',' to ')}.`,
+      hl:[[`${n} ${ROLE[team].toLowerCase()}${n>1?'s':''}`,'need'],[dl,'when']],role:ROLE[team],loc:LOC[team],when:`${DOW[date.getDay()]} ${fmt(date)} · ${SHIFT[shift]}`,need:n,quals:[],incentive:0,cands}}
+  return {k,date,team,shift,n,id,proj}});
+const stOf=id=>REQ[id]&&REQ[id].st;const status=g=>g.proj?'PROJECTED':stOf(g.id)?stOf(g.id).status:'DRAFT';
+const filled=g=>g.proj||!stOf(g.id)?0:stOf(g.id).assigned.reduce((a,c)=>a+c.n,0);
+const left=g=>Math.max(0,g.n-filled(g));
+const doneS=s=>s==='FILLED'||s==='UNABLE_TO_FILL';
+const SL={DRAFT:'Draft',PENDING_APPROVAL:'Pending approval',READY_FOR_OUTREACH:'Ready',OUTREACH_IN_PROGRESS:'Offers out',PARTIALLY_FILLED:'Partially filled',FILLED:'Filled',UNABLE_TO_FILL:'Unable to fill',PROJECTED:'Projected',DECISION:'Decision'};
+const gapsIn=r=>GAPS.filter(g=>inR(g.date,r));
+const openIn=r=>gapsIn(r).reduce((a,g)=>a+left(g),0);
+const decided={};const decIn=r=>DECISIONS.filter(d=>!decided[d.id]&&(d.id==='ot'?inR(D(2026,10,21),r):inR(D(2026,10,21),r)));
+function needIn([a,b]){let t=0;for(let d=new Date(a);d<=b;d=add(d,1))Object.values(TPL).forEach(v=>t+=v[0]+v[1]+v[2]);return t}
+const covIn=r=>{const n=needIn(r);return Math.round((1-openIn(r)/n)*1000)/10};
+
+/* ================= people ================= */
+const PEOPLE=(()=>{const L=[];const seen=new Set();let sd=5;const rnd=()=>{sd=(sd*16807)%2147483647;return sd/2147483647};
+  const CERT={sup:['Product training','Phone system'],ops:['Equipment certified','Forklift'],fac:['HVAC','Electrical'],sec:['Guard license','First aid'],rec:['Visitor system'],fld:['Driver’s license','Level 2'],it:['Admin access','On-call'],log:['Forklift','Hazmat']};
+  Object.entries(POOL).forEach(([t,ns])=>ns.forEach(n=>add1(n,t)));
+  Object.values(REQ).forEach(r=>r.cands.forEach(c=>add1(c.name,c.from==='agency'?r.dept:c.from)));
+  function add1(n,t){if(seen.has(n))return;seen.add(n);const h=Math.round(18+rnd()*24);L.push({n,t,role:ROLE[t],h,certs:CERT[t].slice(0,1+Math.floor(rnd()*CERT[t].length)),sat:rnd()>.35,sun:rnd()>.45,pto:n==='Taylor Ng',last:Math.floor(rnd()*28)+1})}
+  return L.sort((a,b)=>a.n.localeCompare(b.n))})();
+
+/* ================= views & carousel ================= */
+const VIEWS=[['ov','Overview','M3 12h4l3-8 4 16 3-8h4'],['sh','Open shifts','M4 6h16M4 12h16M4 18h10'],['cal','Calendar','M4 5h16v15H4zM4 10h16M9 3v4M15 3v4'],['pp','People','M8 11a3 3 0 100-6 3 3 0 000 6zM2 20c0-3 3-5 6-5s6 2 6 5M16 11a3 3 0 100-6M22 20c0-3-2-5-5-5'],['ac','Activity','M12 7v5l3 3M12 21a9 9 0 110-18 9 9 0 010 18z']];
+const S={view:0,f:{q:'',team:'all',st:'all',sh:'all'},sel:new Set(),p:{q:'',team:'all',sat:false,sun:false,ot:false,sort:'n',dir:1},a:{team:'all',type:'all'},cal:{team:'all'}};
+const $=(s,r=document)=>r.querySelector(s),$$=(s,r=document)=>[...r.querySelectorAll(s)];
+const ini=n=>n.split(' ').map(w=>w[0]).join('').slice(0,2);
+const icon=p=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="${p}"/></svg>`;
+function mount(){
+  $('#stage').innerHTML=VIEWS.map((v,i)=>`<div class="panel" data-i="${i}"><div class="in" id="v-${v[0]}"></div></div>`).join('');
+  $('#hnav').innerHTML=`<div class="ind"></div>`+VIEWS.map((v,i)=>`<button data-v="${i}">${icon(v[2])}${v[1]}${v[0]==='sh'?'<span class="badge" id="shBadge"></span>':''}</button>`).join('');
+  $$('#hnav button').forEach(b=>b.onclick=()=>go(+b.dataset.v));
+  $$('.panel').forEach(p=>p.addEventListener('click',()=>{if(p.classList.contains('off'))go(+p.dataset.i)},true));
+  addEventListener('keydown',e=>{if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;if(e.key==='ArrowRight')go((S.view+1)%VIEWS.length);if(e.key==='ArrowLeft')go((S.view+VIEWS.length-1)%VIEWS.length)});
+  DM.mount($('#dmSlot'),{light:true});DM.on(()=>{renderAll();toast(DM.roster?'Roster only: gaps are measured against your staffing template':'Ops data on: gaps are measured against forecast demand')});
+  renderAll();layout(true)}
+function go(i){S.view=i;layout()}
+function layout(instant){const n=VIEWS.length;
+  $$('.panel').forEach(p=>{const i=+p.dataset.i;if(instant)p.style.transition='none';let o=((i-S.view)%n+n)%n;if(o>2)o-=n;const a=Math.abs(o),sg=Math.sign(o);
+    /* the centered panel gets no 3D transform at all, so its text renders crisp instead of as a scaled texture */
+    p.style.transform=a?`translateX(${[0,900,1440][a]*sg}px) translateZ(${[0,-200,-420][a]}px) rotateY(${[0,40,58][a]*sg}deg) scale(${[1,.75,.6][a]})`:'none';
+    p.style.opacity=[1,.82,.38][a];p.style.filter=a?`blur(${a===1?.6:2.5}px) saturate(${a===1?.7:.4})`:'none';p.style.zIndex=10-a;p.classList.toggle('off',o!==0);
+    if(instant){p.offsetHeight;p.style.transition=''}});
+  const btns=$$('#hnav button'),b=btns[S.view],ind=$('#hnav .ind');btns.forEach((x,i)=>x.classList.toggle('on',i===S.view));
+  if(b){ind.style.left=b.offsetLeft+'px';ind.style.width=b.offsetWidth+'px'}}
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2400)}
+let rq=0;function renderAll(){cancelAnimationFrame(rq);rq=requestAnimationFrame(()=>{tnav();vOverview();vShifts();vCal();vPeople();vActivity();const o=openIn(range());const bd=$('#shBadge');if(bd){bd.textContent=o;bd.style.display=o?'':'none'}})}
+
+/* ================= time nav ================= */
+function rangeLabel(){const [a,b]=range();if(T.scale==='day')return fmtL(a)+(HOLI[key(a)]?' · '+HOLI[key(a)]:'');if(T.scale==='week')return `Week of ${fmt(a)} – ${a.getMonth()===b.getMonth()?b.getDate():fmt(b)}`;return `${fmt(a)} – ${fmt(b)} · next 5 weeks`}
+function rangeSub(){const [a,b]=range();if(a>PUBLISHED_TO)return ['Projected · schedule not published yet','proj'];if(b>PUBLISHED_TO)return [`Published through ${fmt(PUBLISHED_TO)} · projected after`,'proj'];return ['Published schedule',''];}
+function tnav(){const [s,c]=rangeSub();
+  $('#tnav').innerHTML=`<button class="ar" id="tP" title="Earlier">‹</button><div class="tl"><b>${rangeLabel()}</b><small class="${c}">${s}</small></div><button class="ar" id="tN" title="Later">›</button>
+   <div class="seg">${['day','week','month'].map(x=>`<button class="${T.scale===x?'on':''}" data-s="${x}">${x[0].toUpperCase()+x.slice(1)}</button>`).join('')}</div><button class="today" id="tT">This week</button>`;
+  $('#tP').onclick=()=>shift(-1);$('#tN').onclick=()=>shift(1);$('#tT').onclick=()=>{T.scale='week';T.anchor=monday(TODAY);renderAll()};
+  $$('#tnav [data-s]').forEach(b=>b.onclick=()=>setScale(b.dataset.s))}
+function shift(dir){T.anchor=add(T.anchor,dir*(T.scale==='day'?1:T.scale==='week'?7:28));S.sel.clear();renderAll()}
+function setScale(sc,anchor){const [a]=range();if(sc==='day')T.anchor=anchor||(inR(D(2026,10,21),range())?D(2026,10,21):a);else T.anchor=monday(anchor||T.anchor);T.scale=sc;S.sel.clear();renderAll()}
+function drillDay(d){setScale('day',d);toast(`Zoomed into ${fmtL(d)}`)}
+function drillWeek(d){setScale('week',d);toast(`Zoomed into the week of ${fmt(monday(d))}`)}
+
+/* ================= flow wiring ================= */
+const FOPTS={root:document.getElementById('app'),onEvent:(t)=>{if(['status','assigned','close','planDone','response'].includes(t))renderAll()},openOne:r=>Flow.open(r,FOPTS)};
+function review(id){if(REQ[id])Flow.open(REQ[id],FOPTS)}
+function plan(ids){const L=ids.map(i=>REQ[i]).filter(r=>r&&(!r.st||r.st.status==='DRAFT'));if(!L.length){toast('Nothing in draft to review together');return}Flow.openPlan(L,FOPTS)}
+function decision(d){const t=TEAMS[d.team];const el=document.createElement('div');el.className='dec';
+  el.innerHTML=`<div class="decb" style="--fa:${t.c}"><div class="k"><span class="dot" style="background:${t.c}"></span>${t.n} · Decision</div><h3>${d.t}</h3><p class="s">${d.p} · ${d.when}</p>
+   ${d.opts.map(([a,b,r],i)=>`<button class="dopt" data-i="${i}">${r?'<span class="rec">Recommended</span>':''}<b>${a}</b><span>${b}</span></button>`).join('')}
+   <div style="display:flex;justify-content:flex-end;margin-top:12px"><button class="btn" id="dX">Not now</button></div></div>`;
+  $('#app').appendChild(el);el.onclick=e=>{if(e.target===el)el.remove()};$('#dX',el).onclick=()=>el.remove();
+  $$('.dopt',el).forEach(b=>b.onclick=()=>{decided[d.id]={choice:d.opts[+b.dataset.i][0],t:new Date()};el.remove();toast('Done: '+decided[d.id].choice);renderAll()})}
+
+/* ================= overview ================= */
+function vOverview(){const el=$('#v-ov');const r=range();const gs=gapsIn(r);const open=openIn(r);const pub=gs.filter(g=>!g.proj),proj=gs.filter(g=>g.proj);
+  const teams=new Set(gs.filter(g=>left(g)).map(g=>g.team));const waiting=pub.filter(g=>['DRAFT','PENDING_APPROVAL'].includes(status(g))).length+decIn(r).length;
+  const near=PEOPLE.filter(p=>p.h>=38).length;const sc=T.scale;
+  const lead=sc==='day'?`${fmtL(r[0])}: <b>${open} open shift${open===1?'':'s'}</b>${open?` across ${teams.size} team${teams.size>1?'s':''}`:''}.`
+    :sc==='week'?`This range: <b>${open} open shifts</b> across ${teams.size} teams${open?`. ${busiest(gs)} has the most.`:'.'}`
+    :`Next 5 weeks: <b>${open} gaps</b>. ${pub.reduce((a,g)=>a+left(g),0)} are on the published schedule, ${proj.reduce((a,g)=>a+left(g),0)} are projected.`;
+  el.innerHTML=`<div class="agent"><div style="flex:1"><h2>Good morning, Maya.</h2><p>${lead} ${sc==='month'?'At this range I show patterns. Pick a week to see shifts.':open?'I drafted a request for every gap. Nothing goes out until you review it.':'Nothing needs you here.'}</p></div>
+     ${sc!=='month'&&pub.some(g=>status(g)==='DRAFT')?`<button class="btn pri" id="ovPlan">Review the plan</button>`:''}<button class="btn" onclick="go(1)">See open shifts</button></div>
+   <div class="kpis">${[[DM.roster?'Coverage vs template':'Coverage vs forecast',covIn(r)+'%',sc==='day'?'of required shift-hours':'across the range'],['Open shifts',open,`${gs.filter(g=>left(g)).length} shift blocks`],
+      sc==='month'?['Projected',proj.reduce((a,g)=>a+left(g),0),'after '+fmt(PUBLISHED_TO)+', no names yet']:['Waiting on you',waiting,'drafts, approvals and decisions'],['Near overtime',near,'people at 38+ hrs this week']]
+      .map(([a,b,c])=>`<div class="kpi"><small>${a}</small><b>${b}</b><em>${c}</em></div>`).join('')}</div>
+   <div class="ov"><div class="card">${sc==='month'?patterns(gs):needsList(r,pub)}</div><div class="card">${sc==='day'?byTeam(r,gs):sc==='week'?byDay(r):byWeek(r)}</div></div>`;
+  const p=$('#ovPlan',el);if(p)p.onclick=()=>plan(pub.map(g=>g.id));
+  $$('[data-rev]',el).forEach(b=>b.onclick=()=>review(b.dataset.rev));$$('[data-dec]',el).forEach(b=>b.onclick=()=>decision(DECISIONS.find(d=>d.id===b.dataset.dec)));
+  $$('[data-day]',el).forEach(b=>b.onclick=()=>drillDay(pd(b.dataset.day)));$$('[data-wk]',el).forEach(b=>b.onclick=()=>drillWeek(pd(b.dataset.wk)));}
+function busiest(gs){const by={};gs.forEach(g=>{by[DOW[g.date.getDay()]]=(by[DOW[g.date.getDay()]]||0)+left(g)});const top=Object.entries(by).sort((a,b)=>b[1]-a[1])[0];return top?({Sat:'Saturday',Sun:'Sunday',Mon:'Monday',Tue:'Tuesday',Wed:'Wednesday',Thu:'Thursday',Fri:'Friday'})[top[0]]:'—'}
+function needsList(r,pub){const live=pub.filter(g=>!doneS(status(g))).sort((a,b)=>a.date-b.date);const done=pub.filter(g=>doneS(status(g)));const ds=decIn(r);
+  return `<h3>Needs you</h3><div class="s">${live.length+ds.length?`${live.length} request${live.length===1?'':'s'} and ${ds.length} decision${ds.length===1?'':'s'} in this range`:'All clear in this range'}</div><div class="list">
+   ${ds.map(d=>`<div class="li"><span class="dot" style="background:${TEAMS[d.team].c}"></span><div class="tx"><b>${d.t}</b><small>${TEAMS[d.team].n} · ${d.when}</small></div><span class="pill s-DECISION">Decision</span><button class="btn sm pri" data-dec="${d.id}">Make the call</button></div>`).join('')}
+   ${live.map(g=>{const s=status(g);return `<div class="li"><span class="dot" style="background:${TEAMS[g.team].c}"></span><div class="tx"><b>${TEAMS[g.team].n} · ${g.n} ${ROLE[g.team].toLowerCase()}${g.n>1?'s':''}${Flow.scenTags(REQ[g.id])}</b><small>${fmtL(g.date)} · ${g.shift} · ${filled(g)} of ${g.n} filled</small></div><span class="pill s-${s}">${SL[s]}</span><button class="btn sm ${s==='DRAFT'?'pri':''}" data-rev="${g.id}">${s==='DRAFT'?'Review':'Continue'}</button></div>`}).join('')}
+   ${done.map(g=>`<div class="li" style="opacity:.6"><span class="dot" style="background:${TEAMS[g.team].c}"></span><div class="tx"><b>${TEAMS[g.team].n} · covered</b><small>${fmtL(g.date)} · ${stOf(g.id).assigned.map(c=>c.name).join(', ')||'Gap flagged'}</small></div><span class="pill s-${status(g)}">${SL[status(g)]}</span></div>`).join('')}
+   ${!live.length&&!ds.length&&!done.length?'<div class="empty">No gaps in this range.</div>':''}</div>`}
+function byTeam(r,gs){return `<h3>Coverage by team</h3><div class="s">${fmtL(r[0])} · scheduled vs ${DM.roster?'template':'forecast'}</div><div class="bars">${Object.entries(TEAMS).map(([k,t])=>{const need=TPL[k].reduce((a,b)=>a+b,0);const gap=gs.filter(g=>g.team===k).reduce((a,g)=>a+left(g),0);
+   return `<div class="bar"><span><span class="dot" style="background:${t.c}"></span>${t.n}</span><div class="tr"><u style="width:${(need-gap)/need*100}%;background:${t.c}"></u>${gap?`<u class="gap" style="width:${gap/need*100}%"></u>`:''}</div><b style="color:${gap?'var(--bad)':'var(--good)'}">${need-gap}/${need}</b></div>`}).join('')}</div>${hint()}`}
+function byDay(r){const days=[...Array(7)].map((_,i)=>add(r[0],i));const mx=Math.max(1,...days.map(d=>openIn([d,d])));
+  return `<h3>Gaps by day</h3><div class="s">Click a day to see its shifts</div><div class="bars">${days.map(d=>{const o=openIn([d,d]),pj=d>PUBLISHED_TO;
+   return `<div class="bar click" data-day="${key(d)}"><span>${fmtL(d)}${HOLI[key(d)]?' 🦃':''}</span><div class="tr">${o?`<u class="${pj?'proj':'gap'}" style="width:${o/mx*100}%;left:0;right:auto"></u>`:`<u class="okbar" style="width:100%"></u>`}</div><b style="color:${o?'var(--bad)':'var(--good)'}">${o?o+' open':'✓'}</b></div>`}).join('')}</div>${hint()}`}
+function byWeek(r){const wks=[...Array(5)].map((_,i)=>add(r[0],i*7));const mx=Math.max(1,...wks.map(w=>openIn([w,add(w,6)])));
+  return `<h3>Gaps by week</h3><div class="s">Click a week to zoom in · striped is projected</div><div class="bars">${wks.map(w=>{const rr=[w,add(w,6)],o=openIn(rr),pj=w>PUBLISHED_TO;
+   return `<div class="bar click" data-wk="${key(w)}"><span>${fmt(w)} – ${fmt(add(w,6))}</span><div class="tr"><u class="${pj?'proj':'gap'}" style="width:${o/mx*100}%;left:0;right:auto"></u></div><b style="color:${pj?'var(--proj)':'var(--bad)'}">${o}${pj?' proj.':''}</b></div>`}).join('')}</div>${hint()}`}
+function patterns(gs){const secW=new Set(gs.filter(g=>g.team==='sec').map(g=>key(monday(g.date)))).size;
+  const P=[['Holiday','Thanksgiving week is short in Support and Operations',`${gs.filter(g=>['2026-11-26','2026-11-27'].includes(g.k)).reduce((a,g)=>a+left(g),0)} gaps on Thursday and Friday. Open a sign-up now and offer the holiday rate before people make plans.`,'2026-11-23','Show that week'],
+    ['Recurring',`Security is short ${secW} of 5 weekends`,'Always the Saturday evening shift. Adding one weekend officer to the template would close it for good, instead of a request every week.','2026-11-16','Show this weekend'],
+    ['Recurring','Saturday nights in Operations run 1 to 4 short','Every Saturday this month. Night bonuses filled it last time. Consider a standing night differential.','2026-11-16','Show this weekend'],
+    ['Projected',`${gs.filter(g=>g.proj).reduce((a,g)=>a+left(g),0)} gaps after ${fmt(PUBLISHED_TO)}`,'The schedule isn’t published yet, so these come from the template and usual availability. I’ll draft requests once it’s published.','2026-12-07','Show projected weeks']];
+  return `<h3>Patterns I see</h3><div class="s">At this range I suggest fixes, not individual shifts</div><div class="list">${P.map(([k,t,p,w,l])=>`<div class="sug"><div class="k">${k}</div><b>${t}</b><p>${p}</p><div class="acts"><button class="btn sm" data-wk="${w}">${l}</button></div></div>`).join('')}</div>`}
+const hint=()=>DM.roster?`<div class="dmHint"><span class="dmBadge">Roster only</span>Gaps are measured against your staffing template. With demand data I’d size each team to forecast volume.</div>`:'';
+
+/* ================= open shifts table ================= */
+function vShifts(){const el=$('#v-sh');const r=range();const f=S.f;let rows=gapsIn(r);
+  const sts=[['all','All'],['DRAFT','Draft'],['live','In progress'],['PENDING_APPROVAL','Approval'],['done','Done'],['PROJECTED','Projected']];
+  const cnt=k=>rows.filter(g=>stMatch(g,k)).length;
+  rows=rows.filter(g=>stMatch(g,f.st)&&(f.team==='all'||g.team===f.team)&&(f.sh==='all'||g.shift===f.sh)&&(!f.q||(TEAMS[g.team].n+' '+ROLE[g.team]+' '+fmtL(g.date)).toLowerCase().includes(f.q.toLowerCase()))).sort((a,b)=>a.date-b.date||a.team.localeCompare(b.team));
+  const selD=[...S.sel].filter(id=>REQ[id]&&(!REQ[id].st||REQ[id].st.status==='DRAFT'));const ds=decIn(r);
+  el.innerHTML=`<div class="ph"><div style="flex:1"><h2>Open shifts</h2><p>${rangeLabel()} · ${rows.length} shift block${rows.length===1?'':'s'} · ${rows.reduce((a,g)=>a+left(g),0)} people short</p></div>
+     <button class="btn" id="shSel" ${selD.length?'':'disabled'}>Review selected${selD.length?` (${selD.length})`:''}</button><button class="btn pri" id="shAll" ${rows.some(g=>status(g)==='DRAFT')?'':'disabled'}>Review all drafts</button></div>
+   ${ds.length?`<div class="li decbar"><span class="pill s-DECISION">${ds.length} decision${ds.length>1?'s':''}</span><div class="tx"><b>${ds.map(d=>d.t).join(' · ')}</b><small>These aren’t shifts to fill. They need a person to pick.</small></div>${ds.map(d=>`<button class="btn sm" data-dec="${d.id}">${d.id==='dbl'?'Alex Kim':'Chris Dunn'}</button>`).join('')}</div>`:''}
+   <div class="tb"><label class="search">${icon('M11 19a8 8 0 100-16 8 8 0 000 16zM21 21l-4-4')}<input id="shQ" placeholder="Search team, role or day" value="${f.q}"></label>
+     <select class="sel" id="shT"><option value="all">All teams</option>${Object.entries(TEAMS).map(([k,t])=>`<option value="${k}" ${f.team===k?'selected':''}>${t.n}</option>`).join('')}</select>
+     <div class="chips" id="shSt">${sts.map(([k,l])=>`<button data-k="${k}" class="${f.st===k?'on':''}">${l}<em>${cnt(k)}</em></button>`).join('')}</div>
+     <div class="chips" id="shSh">${['all','Day','Evening','Night'].map(k=>`<button data-k="${k}" class="${f.sh===k?'on':''}">${k==='all'?'All shifts':k}</button>`).join('')}</div></div>
+   <div class="tw"><table><thead><tr><th style="width:34px"><input type="checkbox" id="shCA"></th><th>Date</th><th>Shift</th><th>Team</th><th>Short</th><th>Filled</th><th>Status</th><th style="width:110px"></th></tr></thead><tbody>
+   ${rows.map(g=>{const s=status(g),fl=filled(g);return `<tr class="${g.proj?'proj':''}"><td>${g.proj?'':`<input type="checkbox" data-id="${g.id}" ${S.sel.has(g.id)?'checked':''} ${s!=='DRAFT'?'disabled':''}>`}</td>
+     <td><b>${fmtL(g.date)}</b>${HOLI[g.k]?`<small>${HOLI[g.k]}</small>`:''}</td><td>${ROLE[g.team]}${g.proj?'':Flow.scenTags(REQ[g.id])}<small>${g.shift} · ${SHIFT[g.shift]}</small></td><td><span class="dot" style="background:${TEAMS[g.team].c}"></span>${TEAMS[g.team].n}</td>
+     <td class="num">${g.n}</td><td>${g.proj?'<small>No names yet</small>':`<div class="prog"><i><u style="width:${fl/g.n*100}%"></u></i>${fl}/${g.n}</div>`}</td><td><span class="pill s-${s}">${SL[s]}</span></td>
+     <td>${g.proj?`<small>Drafts when published</small>`:doneS(s)?`<button class="btn sm" data-rev="${g.id}">View</button>`:`<button class="btn sm ${s==='DRAFT'?'pri':''}" data-rev="${g.id}">${s==='DRAFT'?'Review':'Continue'}</button>`}</td></tr>`}).join('')}
+   </tbody></table>${rows.length?'':'<div class="empty">No shifts match these filters.</div>'}</div>`;
+  const q=$('#shQ',el);q.oninput=e=>{f.q=e.target.value;vShifts();const n=$('#shQ');n.focus();n.setSelectionRange(n.value.length,n.value.length)};
+  $('#shT',el).onchange=e=>{f.team=e.target.value;vShifts()};
+  $$('#shSt button',el).forEach(b=>b.onclick=()=>{f.st=b.dataset.k;vShifts()});$$('#shSh button',el).forEach(b=>b.onclick=()=>{f.sh=b.dataset.k;vShifts()});
+  $$('[data-id]',el).forEach(c=>c.onchange=()=>{c.checked?S.sel.add(c.dataset.id):S.sel.delete(c.dataset.id);vShifts()});
+  $('#shCA',el).onchange=e=>{rows.filter(g=>!g.proj&&status(g)==='DRAFT').forEach(g=>e.target.checked?S.sel.add(g.id):S.sel.delete(g.id));vShifts()};
+  $$('[data-rev]',el).forEach(b=>b.onclick=()=>review(b.dataset.rev));$$('[data-dec]',el).forEach(b=>b.onclick=()=>decision(DECISIONS.find(d=>d.id===b.dataset.dec)));
+  $('#shSel',el).onclick=()=>{plan(selD);S.sel.clear()};$('#shAll',el).onclick=()=>plan(rows.filter(g=>!g.proj).map(g=>g.id))}
+function stMatch(g,k){const s=status(g);if(k==='all')return true;if(k==='live')return ['READY_FOR_OUTREACH','OUTREACH_IN_PROGRESS','PARTIALLY_FILLED'].includes(s);if(k==='done')return doneS(s);return s===k}
+
+/* ================= calendar (day: team x shift · week: team x day · month: heatmap) ================= */
+function cellFor(team,d,shift){const need=shift?TPL[team][['Day','Evening','Night'].indexOf(shift)]:TPL[team].reduce((a,b)=>a+b,0);
+  const gs=GAPS.filter(g=>g.team===team&&g.k===key(d)&&(!shift||g.shift===shift));const gap=gs.reduce((a,g)=>a+left(g),0),orig=gs.reduce((a,g)=>a+g.n,0);
+  if(!need)return `<span class="cell none">—</span>`;const pj=gs.some(g=>g.proj);
+  const cls=!gap?'':pj?'proj':gap<orig?'part':'short';const id=gs.find(g=>left(g)&&!g.proj);
+  return `<span class="cell ${cls}" ${gap?(id?`data-rev="${id.id}"`:`data-pj="1"`):''}>${need-gap}/${need}${gap?`<small>${pj?'projected':'−'+gap}</small>`:''}</span>`}
+function vCal(){const el=$('#v-cal');const r=range();const sc=T.scale;const teams=Object.entries(TEAMS).filter(([k])=>S.cal.team==='all'||k===S.cal.team);
+  const head=`<div class="ph"><div style="flex:1"><h2>Calendar</h2><p>${rangeLabel()} · ${sc==='day'?'each cell is scheduled / needed for that shift':sc==='week'?'each cell is scheduled / needed for the day · click a red cell to review it':'gaps per day · click a day to zoom in'}</p></div>
+     <select class="sel" id="calT"><option value="all">All teams</option>${Object.entries(TEAMS).map(([k,t])=>`<option value="${k}" ${S.cal.team===k?'selected':''}>${t.n}</option>`).join('')}</select></div>`;
+  let body='';
+  if(sc==='day'){const d=r[0];body=`<div class="grid"><table><thead><tr><th>Team</th>${['Day','Evening','Night'].map(s=>`<th style="text-align:center">${s}<small style="text-transform:none;letter-spacing:0;font-weight:500">${SHIFT[s]}</small></th>`).join('')}</tr></thead><tbody>
+    ${!DM.roster?`<tr><td><b>Demand forecast</b><small>from ops data</small></td>${[.7,1,.5].map(v=>`<td class="c"><span class="cell fc">${Math.round(v*100)}%</span></td>`).join('')}</tr>`:''}
+    ${teams.map(([k,t])=>`<tr><td><span class="dot" style="background:${t.c}"></span>${t.n}</td>${['Day','Evening','Night'].map(s=>`<td class="c">${cellFor(k,d,s)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
+  else if(sc==='week'){const days=[...Array(7)].map((_,i)=>add(r[0],i));body=`<div class="grid"><table><thead><tr><th>Team</th>${days.map(d=>`<th style="text-align:center;cursor:pointer" data-day="${key(d)}">${DOW[d.getDay()]} ${d.getDate()}${HOLI[key(d)]?' 🦃':''}</th>`).join('')}</tr></thead><tbody>
+    ${!DM.roster?`<tr><td><b>Demand forecast</b><small>from ops data</small></td>${days.map(d=>{const v=[.6,.7,.7,.75,.85,1,.8][(d.getDay()+6)%7];return `<td class="c"><span class="cell fc">${Math.round(v*100)}%</span></td>`}).join('')}</tr>`:''}
+    ${teams.map(([k,t])=>`<tr><td><span class="dot" style="background:${t.c}"></span>${t.n}</td>${days.map(d=>`<td class="c">${cellFor(k,d)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`}
+  else{const days=[...Array(35)].map((_,i)=>add(r[0],i));body=`<div class="cal">${['Mon','Tue','Wed','Thu','Fri','Sat','Sun'].map(x=>`<div class="h">${x}</div>`).join('')}
+    ${days.map(d=>{const gs=GAPS.filter(g=>g.k===key(d)&&(S.cal.team==='all'||g.team===S.cal.team));const o=gs.reduce((a,g)=>a+left(g),0);const pj=d>PUBLISHED_TO;
+      return `<div class="day ${o?(pj?'pj':o>4?'l3':o>2?'l2':'l1'):''} ${key(d)===key(TODAY)?'today':''} ${d<TODAY?'past':''}" data-day="${key(d)}"><div class="d">${d.getDate()===1||d===days[0]?MON[d.getMonth()]+' ':''}${d.getDate()}</div>${o?`<span class="n">${o}</span>`:''}
+       <div class="tm">${[...new Set(gs.filter(g=>left(g)).map(g=>g.team))].map(t=>`<i style="background:${TEAMS[t].c}" title="${TEAMS[t].n}"></i>`).join('')}</div>${HOLI[key(d)]?`<div class="hl">${HOLI[key(d)]}</div>`:''}</div>`}).join('')}</div>
+    <div class="legend"><span><i style="background:#ffe0e4"></i>Gaps on the published schedule</span><span><i style="background:#fff4e6;border:1px dashed #fdba74"></i>Projected (not published yet)</span><span>Dots show which teams are short</span></div>`}
+  el.innerHTML=head+body+(sc!=='month'&&DM.roster?`<div class="dmHint"><span class="dmBadge">Roster only</span>“Needed” comes from your staffing template. Switch to Ops data to see a demand forecast row.</div>`:'');
+  $('#calT',el).onchange=e=>{S.cal.team=e.target.value;vCal()};
+  $$('[data-rev]',el).forEach(b=>b.onclick=()=>review(b.dataset.rev));$$('[data-pj]',el).forEach(b=>b.onclick=()=>toast('Projected gap: the schedule isn’t published yet, so there’s nobody to message. I’ll draft it when it is.'));
+  $$('[data-day]',el).forEach(b=>b.onclick=()=>drillDay(pd(b.dataset.day)))}
+
+/* ================= people ================= */
+function vPeople(){const el=$('#v-pp');const p=S.p;let rows=PEOPLE.filter(x=>(p.team==='all'||x.t===p.team)&&(!p.sat||x.sat&&!x.pto)&&(!p.sun||x.sun&&!x.pto)&&(!p.ot||x.h<38)&&(!p.q||(x.n+' '+TEAMS[x.t].n+' '+x.certs.join(' ')).toLowerCase().includes(p.q.toLowerCase())));
+  const by={n:x=>x.n,t:x=>TEAMS[x.t].n,h:x=>x.h,last:x=>x.last};rows.sort((a,b)=>{const A=by[p.sort](a),B=by[p.sort](b);return (A>B?1:A<B?-1:0)*p.dir});
+  const th=(k,l)=>`<th class="sort" data-s="${k}">${l}${p.sort===k?`<span class="ar">${p.dir>0?'▲':'▼'}</span>`:''}</th>`;
+  const assigned=new Set(Object.values(REQ).flatMap(r=>r.st?r.st.assigned.map(c=>c.name):[]));
+  el.innerHTML=`<div class="ph"><div style="flex:1"><h2>People</h2><p>${rows.length} of ${PEOPLE.length} people · hours are this week · the agent only offers shifts to people who pass every rule</p></div></div>
+   <div class="tb"><label class="search">${icon('M11 19a8 8 0 100-16 8 8 0 000 16zM21 21l-4-4')}<input id="ppQ" placeholder="Search name, team or certification" value="${p.q}"></label>
+     <select class="sel" id="ppT"><option value="all">All teams</option>${Object.entries(TEAMS).map(([k,t])=>`<option value="${k}" ${p.team===k?'selected':''}>${t.n}</option>`).join('')}</select>
+     <div class="chips">${[['sat','Available Sat'],['sun','Available Sun'],['ot','Hide near overtime']].map(([k,l])=>`<button data-k="${k}" class="${p[k]?'on':''}">${l}</button>`).join('')}</div></div>
+   <div class="tw"><table><thead><tr>${th('n','Name')}${th('t','Team')}<th>Role</th>${th('h','Hours')}<th>Status</th><th>Certifications</th><th>Sat</th><th>Sun</th>${th('last','Last extra shift')}</tr></thead><tbody>
+   ${rows.map(x=>`<tr><td><span class="av2">${ini(x.n)}</span><b>${x.n}</b></td><td><span class="dot" style="background:${TEAMS[x.t].c}"></span>${TEAMS[x.t].n}</td><td>${x.role}</td>
+     <td><div class="hrs"><i><u class="${x.h>=38?'hot':''}" style="width:${Math.min(100,x.h/44*100)}%"></u></i>${x.h}</div></td>
+     <td>${x.pto?'<span class="tag no">PTO</span>':assigned.has(x.n)?'<span class="tag ok">Picked up a shift</span>':x.h>=38?'<span class="tag warn">Near overtime</span>':'<span class="tag">Scheduled</span>'}</td>
+     <td>${x.certs.map(c=>`<span class="tag">${c}</span>`).join('')}</td><td>${x.sat&&!x.pto?'✓':'<span style="color:#cbd5e1">—</span>'}</td><td>${x.sun&&!x.pto?'✓':'<span style="color:#cbd5e1">—</span>'}</td><td class="num">${x.last} days ago</td></tr>`).join('')}
+   </tbody></table>${rows.length?'':'<div class="empty">Nobody matches these filters.</div>'}</div>`;
+  $('#ppQ',el).oninput=e=>{p.q=e.target.value;vPeople();const n=$('#ppQ');n.focus();n.setSelectionRange(n.value.length,n.value.length)};
+  $('#ppT',el).onchange=e=>{p.team=e.target.value;vPeople()};$$('.chips button',el).forEach(b=>b.onclick=()=>{p[b.dataset.k]=!p[b.dataset.k];vPeople()});
+  $$('th.sort',el).forEach(h=>h.onclick=()=>{const k=h.dataset.s;if(p.sort===k)p.dir*=-1;else{p.sort=k;p.dir=1}vPeople()})}
+
+/* ================= activity ================= */
+function vActivity(){const el=$('#v-ac');const a=S.a;
+  const ty=t=>/assigned|filled|Released/i.test(t)?'assign':/Offer|sent/i.test(t)?'offer':/approv|Returned/i.test(t)?'approve':'other';
+  let rows=[];Object.entries(REQ).forEach(([id,r])=>{if(!r.st)return;r.st.hist.forEach(h=>rows.push({team:r.dept,req:`${r.role} · ${r.when.split(' · ')[0].replace(/ \d+:.*/,'')}`,t:h.t,title:h.title,by:h.by,sub:h.sub,ty:ty(h.title)}))});
+  Object.entries(decided).forEach(([id,d])=>{const x=DECISIONS.find(z=>z.id===id);rows.push({team:x.team,req:x.t,t:d.t.toLocaleTimeString([],{hour:'numeric',minute:'2-digit'}),title:'Decision made',by:'Maya Rivers',sub:d.choice,ty:'decision'})});
+  rows=rows.filter(x=>(a.team==='all'||x.team===a.team)&&(a.type==='all'||x.ty===a.type));
+  el.innerHTML=`<div class="ph"><div style="flex:1"><h2>Activity</h2><p>Every step on every request, newest first. This is the audit trail.</p></div></div>
+   <div class="tb"><select class="sel" id="acT"><option value="all">All teams</option>${Object.entries(TEAMS).map(([k,t])=>`<option value="${k}" ${a.team===k?'selected':''}>${t.n}</option>`).join('')}</select>
+    <div class="chips">${[['all','All'],['offer','Offers'],['assign','Assignments'],['approve','Approvals'],['decision','Decisions'],['other','Other']].map(([k,l])=>`<button data-k="${k}" class="${a.type===k?'on':''}">${l}</button>`).join('')}</div></div>
+   <div class="tw"><table><thead><tr><th>Time</th><th>Team</th><th>Request</th><th>Event</th><th>By</th><th>Detail</th></tr></thead><tbody>
+   ${rows.map(x=>`<tr><td class="num">${x.t}</td><td><span class="dot" style="background:${TEAMS[x.team].c}"></span>${TEAMS[x.team].n}</td><td>${x.req}</td><td><b>${x.title}</b></td><td>${x.by}</td><td><small style="margin:0">${x.sub||''}</small></td></tr>`).join('')}
+   </tbody></table>${rows.length?'':'<div class="empty">No activity yet. Review a request and every step lands here.</div>'}</div>`;
+  $('#acT',el).onchange=e=>{a.team=e.target.value;vActivity()};$$('.chips button',el).forEach(b=>b.onclick=()=>{a.type=b.dataset.k;vActivity()})}
+
+/* ================= demo guide (presenter shortcuts) ================= */
+function guide(){let g=$('#guide');if(g){g.remove();return}g=document.createElement('div');g.className='guide';g.id='guide';
+  const done=id=>REQ[id]&&REQ[id].st&&['FILLED','UNABLE_TO_FILL'].includes(REQ[id].st.status);
+  const items=[['⚖','Your call: Security','3 officers say yes for 2 spots. Policy: avoid overtime.',()=>review('sec'),done('sec')],
+    ['⚖','Your call: Field Service','3 technicians say yes for 2 spots. Labor agreement: seniority.',()=>review('fld'),done('fld')],
+    ['＋','Bonus round: Operations','Only 2 of 4 say yes. Add a $50 bonus, a second manager approves, re-offer.',()=>review('ops'),done('ops')],
+    ['📱','Worker’s phone, start to finish','Any request with “Show what the worker sees” on. Security follows Kai (confirmed); Field Service follows Avery (not picked).',()=>review('sec'),false],
+    ['⇄','Decision: Alex Kim booked twice','A schedule clash only a person can settle.',()=>decision(DECISIONS[0]),!!decided.dbl],
+    ['⏱','Decision: Chris Dunn at 46 hours','Overtime approval or a swap.',()=>decision(DECISIONS[1]),!!decided.ot],
+    ['🗓','Month view: patterns and projected gaps','Thanksgiving, recurring Security gaps, unpublished weeks.',()=>{setScale('month');go(0)},false],
+    ['◎','Roster only vs Ops data','Flip the toggle top right. Calendar gets a demand row.',()=>{DM.set(DM.roster?'full':'roster');go(2)},false]];
+  g.innerHTML=`<h4>Demo scenarios</h4><p>Jump straight to the moments worth showing. Purple “Your call” and orange “Bonus round” tags mark them in the lists too.</p>
+    ${items.map(([ic,t,d,f,dn],i)=>`<div class="gi"><span class="ic">${ic}</span><div class="tx"><b>${t}</b><small>${d}</small></div><button class="btn sm ${dn?'':'pri'}" data-g="${i}">${dn?'Done ✓':'Go'}</button></div>`).join('')}`;
+  $('#app').appendChild(g);$$('[data-g]',g).forEach(b=>b.onclick=()=>{g.remove();if(S.view!==0&&+b.dataset.g<6)go(0);if(+b.dataset.g<3&&T.scale==='month')setScale('week',monday(TODAY));items[+b.dataset.g][3]()});
+  setTimeout(()=>document.addEventListener('click',function c(e){if(!g.contains(e.target)&&e.target.id!=='guideBtn'){g.remove();document.removeEventListener('click',c)}}),0)}
+
+/* ================= Shifty chat: talk to the agent to get things done ================= */
+const CH={open:false,said:false};
+function chatOpen(on){CH.open=on;$('#chat').classList.toggle('on',on);if(on){if(!CH.said){CH.said=true;shSay(`Hi Maya. I can find gaps, draft requests, check hours and rules, and walk you through decisions. <b>I draft, you decide:</b> nothing goes out until you say so. What do you need?`)}suggest();setTimeout(()=>$('#dIn').focus(),50)}}
+function suggest(){const L=['Cover this weekend','What needs me?','Who’s near overtime?','Show Security','Who can work Saturday?','Look ahead a month'];
+  $('#cSug').innerHTML=L.map(t=>`<button>${t}</button>`).join('');$$('#cSug button').forEach(b=>b.onclick=()=>ask(b.textContent))}
+function addMsg(html,who){const m=document.createElement('div');m.className='cm '+who;m.innerHTML=html;$('#cMsgs').appendChild(m);$('#cMsgs').scrollTop=1e6;return m}
+function shSay(html,acts=[]){const t=addMsg('<i></i><i></i><i></i>','a typing');faceTalk($('#cFace'),900);faceTalk($('#dFace'),900);
+  setTimeout(()=>{t.remove();const m=addMsg(html+(acts.length?`<div class="acts">${acts.map((a,i)=>`<button class="btn sm ${i?'':'pri'}" data-i="${i}">${a[0]}</button>`).join('')}</div>`:''),'a');
+    $$('[data-i]',m).forEach(b=>b.onclick=()=>{acts[+b.dataset.i][1]()})},650)}
+function ask(q){if(!q.trim())return;CH.said=true;chatOpen(true);addMsg(q.replace(/</g,'&lt;'),'u');const v=q.toLowerCase();const r=range();
+  const drafts=gapsIn(r).filter(g=>!g.proj&&status(g)==='DRAFT');const team=Object.entries(TEAMS).find(([k,t])=>v.includes(t.n.toLowerCase())||v.includes(t.n.split(' ')[0].toLowerCase()));
+  if(/cover|fill|plan|draft|send/.test(v)&&!team){
+    if(T.scale==='month')setScale('week',monday(TODAY));const d2=gapsIn(range()).filter(g=>!g.proj&&status(g)==='DRAFT');
+    if(!d2.length){shSay('Everything this week is already moving. Want to see where each request stands?',[['Show open shifts',()=>go(1)]]);return}
+    shSay(`This week has <b>${d2.reduce((a,g)=>a+g.n,0)} open shifts</b> across ${new Set(d2.map(g=>g.team)).size} teams. I drafted a request for each. We’ll review them together: confirm, send offers, then you pick who works.`,[[`Review all ${d2.length}`,()=>{chatOpen(false);plan(d2.map(g=>g.id))}],['Show me first',()=>go(1)]]);return}
+  if(/overtime|ot\b|hours|tired|fatigue/.test(v)){const near=PEOPLE.filter(p=>p.h>=38).sort((a,b)=>b.h-a.h);
+    shSay(`<b>${near.length} people</b> are at 38 hours or more this week. I won’t offer them shifts that push past your overtime rule without asking you first.<ul>${near.slice(0,5).map(p=>`<li>${p.n} · ${TEAMS[p.t].n} · ${p.h} hrs</li>`).join('')}</ul>`,[['Open People',()=>{S.p.ot=false;S.p.sort='h';S.p.dir=-1;go(3);vPeople()}],['Hide them from lists',()=>{S.p.ot=true;go(3);vPeople()}]]);return}
+  if(/available|who can|free|saturday|sunday|weekend/.test(v)&&/who|avail|free/.test(v)){const sun=/sun/.test(v);const L=PEOPLE.filter(p=>(sun?p.sun:p.sat)&&!p.pto&&p.h<38);
+    shSay(`<b>${L.length} people</b> are available ${sun?'Sunday':'Saturday'} and under 38 hours. I’ve filtered People to show them.`,[['Show them',()=>{S.p.sat=!sun;S.p.sun=sun;S.p.ot=true;go(3);vPeople()}]]);return}
+  if(team){const [k,t]=team;const gs=gapsIn(range()).filter(g=>g.team===k&&left(g));S.f.team=k;S.f.st='all';vShifts();go(1);
+    shSay(gs.length?`${t.n} has <b>${gs.reduce((a,g)=>a+left(g),0)} open</b> in this range. I filtered Open shifts to ${t.n}.${gs.some(g=>Flow.scen(REQ[g.id]).length)?' One of these is a “Your call”: more people may say yes than you need.':''}`:`${t.n} is fully covered in this range.`,
+      gs.filter(g=>!g.proj).slice(0,2).map(g=>[`Review ${fmt(g.date)} ${g.shift.toLowerCase()}`,()=>{chatOpen(false);review(g.id)}]));return}
+  if(/decision|conflict|clash|double|booked twice/.test(v)){const ds=decIn(r);if(!ds.length){shSay('No open decisions in this range.');return}
+    shSay(`${ds.length} decision${ds.length>1?'s':''} need a person, not a request:<ul>${ds.map(d=>`<li>${d.t}</li>`).join('')}</ul>`,ds.map(d=>[d.id==='dbl'?'Alex Kim':'Chris Dunn',()=>{chatOpen(false);decision(d)}]));return}
+  if(/month|ahead|next week|future|thanksgiving|holiday|pattern/.test(v)){setScale('month');go(0);
+    shSay('Here are the next 5 weeks. At this range I show patterns instead of single shifts. The big ones: <b>Thanksgiving week</b> is short in Support and Operations, and <b>Security</b> is short almost every weekend.',[['Show Thanksgiving week',()=>drillWeek(D(2026,10,23))],['Open the calendar',()=>go(2)]]);return}
+  if(/need|todo|to do|status|left|summary|what.*(happen|going)/.test(v)){const open=openIn(r),ds=decIn(r).length,dr=drafts.length;
+    shSay(`${rangeLabel()}: <b>${open} open shifts</b>. ${dr} request${dr===1?' is':'s are'} drafted and waiting on you${ds?`, plus ${ds} decision${ds>1?'s':''}`:''}.`,[[dr?'Review the plan':'Show open shifts',()=>{if(dr){chatOpen(false);plan(drafts.map(g=>g.id))}else go(1)}],['Show decisions',()=>ask('decisions')]]);return}
+  if(/calendar|schedule|grid/.test(v)){go(2);shSay('Here’s the calendar for '+rangeLabel()+'. Red cells are gaps; click one to review it.');return}
+  shSay('I can help with coverage: filling gaps, checking hours and availability, decisions, and looking ahead. Try one of these:');}
+(function(){$('#dFace').onclick=()=>chatOpen(!CH.open);$('#cX').onclick=()=>chatOpen(false);
+  $('#dForm').onsubmit=e=>{e.preventDefault();const v=$('#dIn').value;$('#dIn').value='';ask(v)};
+  $('#dIn').onfocus=()=>{if(!CH.open)setTimeout(()=>{if(!CH.open&&!$('#dIn').value)chatOpen(true)},150)};
+  const tips=['Ask me anything, or tell me what to do','Try “cover this weekend”','Try “who’s near overtime?”','Try “show Security”'];let ti=0;
+  setInterval(()=>{if(CH.open)return;ti=(ti+1)%tips.length;const t=$('#dTip');if(t){t.style.opacity=0;setTimeout(()=>{t.textContent=tips[ti];t.style.opacity=1},250)}},4500)})();
+function fit(){const k=Math.min(innerWidth/1600,innerHeight/900),A=document.getElementById('app');A.style.setProperty('--s',k);A.style.setProperty('--x',Math.round((innerWidth-1600*k)/2)+'px');A.style.setProperty('--y',Math.round((innerHeight-900*k)/2)+'px')}addEventListener('resize',fit);fit();
+function setTheme(dark){const A=document.getElementById('app');A.classList.toggle('dark',dark);A.classList.toggle('gen',!dark);A.classList.toggle('gdark',dark);
+  document.body.style.background=dark?'#0b1220':'#eef3f8';$('#thBtn').textContent=dark?'☀':'☾';const t=$('.dmT');if(t)t.classList.toggle('light',!dark);
+  if(location.hash!==(dark?'#dark':'#light'))history.replaceState(null,'',dark?'#dark':'#light')}
+const DARK=location.hash!=='#light';if(!/[?&]bg=none/.test(location.search))document.getElementById('app').classList.add('photo');Flow.fullPhone=true;
+scaGate(DARK?'dark':'light',()=>{mount();$('#dFace').innerHTML=agentFace();$('#cFace').innerHTML=agentFace();setTheme(DARK);$('#thBtn').onclick=()=>setTheme(!$('#app').classList.contains('dark'));$('#guideBtn').onclick=guide;setTimeout(()=>faceTalk($('#dFace'),1500),600)});
+</script>
+</body>
+</html>
